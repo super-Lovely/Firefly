@@ -9,7 +9,7 @@ export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.avif",
 
 	// 名字
-	name: "Benn",
+	name: "superlovely",
 
 	// 个人签名
 	bio: "A dreamer, a coder, a learner.",
@@ -22,9 +22,9 @@ export const profileConfig: ProfileConfig = {
 	// showName: true 时显示图标和名称，false 时只显示图标
 	links: [
 		{
-			name: "qq",
-			icon: "fa7-brands:qq",
-			url: "https://user.qzone.qq.com/1022702079/main",
+			name: "BiliBili",
+			icon: "fa7-brands:bilibili",
+			url: "https://space.bilibili.com/1918608502?spm_id_from=333.1007.0.0",
 			showName: false,
 		},
 		{

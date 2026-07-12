@@ -1,37 +1,58 @@
-# Flutter + Android SDK 开发环境配置手册
-
-> **适用平台**: Windows 10/11 | **最后更新**: 2026-07 | **Flutter**: 3.44.6 stable
-
+---
+title: windows11环境配置Flutter和Android开发环境教程
+published: 2026-07-11
+description: 解决windows11上配置Flutter和Android开发环境的问题
+image: https://cdn.jsdelivr.net/gh/feiyu1131/pictures/img/202302011747932.png
+tags: [Flutter, Android]
+categories: [Flutter]
+draft: false
 ---
 
-## 目录
-
-- [一、环境概览](#一环境概览)
-- [二、安装 Flutter SDK](#二安装-flutter-sdk)
-- [三、安装 Android SDK](#三安装-android-sdk)
-  - [3.1 网络诊断与策略选择](#31-网络诊断与策略选择)
-  - [3.2 安装 JDK 17](#32-安装-jdk-17)
-  - [3.3 下载 Command Line Tools](#33-下载-command-line-tools)
-  - [3.4 安装 SDK 组件](#34-安装-sdk-组件)
-  - [3.5 配置环境变量](#35-配置环境变量)
-- [四、验证](#四验证)
-- [五、常见问题](#五常见问题)
+# Flutter + Android SDK 开发环境配置
 
 ---
+::: info 💡 写在前面
+- 适用平台：Windows 10/11
 
+- 核心版本：Flutter 3.44.6 stable | Android SDK API 35 | Build Tools 35.0.0 | JDK 17
+:::
+
+::: tip 📢 注意
+- 接下来的教程用 `D:\Devtools` 做为开发工具的安装目录，请根据个人情况自行修改
+:::
+
+- 🤔 为什么不直接用 Android Studio？
+  - Android Studio 体积通常超过 1.5G，且大部分功能属于 IDE 图形界面代码。为了保持系统轻量纯净，本教程推荐使用 VS Code 配合 Android SDK 命令行工具（cmdline-tools）进行纯命令行式配置
+---
 ## 一、环境概览
 
 ### 完整依赖关系
 
 ```mermaid
-graph TD
-    A["💻 操作系统<br/>Windows 10/11"] --> B["☕ JDK 17+<br/>(Android SDK 依赖)"]
-    A --> C["📱 Flutter SDK<br/>3.44.6 stable"]
-    C --> D["🛠️ Android SDK<br/>API 35 + Build Tools 35.0.0"]
-    B --> D
-    D --> E["platform-tools<br/>(ADB / fastboot)"]
-    D --> F["cmdline-tools<br/>(sdkmanager)"]
-    C --> G["VSCode / Android Studio<br/>(IDE, 可选)"]
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#eff6ff', 'edgeColor': '#3b82f6' }}}%%
+flowchart TD
+    A["💻 操作系统<br>Windows 10/11"]
+    B["☕ JDK 17<br>(Android SDK 依赖)"]
+    C["🚀 Flutter SDK<br>v3.44.6 stable"]
+    D["🤖 Android SDK<br>API 35 + Build Tools 35.0.0"]
+    
+    E["🛠️ platform-tools<br>(ADB / Fastboot)"]
+    F["⚙️ cmdline-tools<br>(sdkmanager)"]
+    G["📝 编辑器 (可选)<br>VS Code / Android Studio"]
+
+    A --> B
+    A --> C
+    A --> D
+    
+    D --> E
+    D --> F
+    
+    C --> G
+    D --> G
+
+    style A fill:#fee2e2,stroke:#ef4444,stroke-width:2px
+    style C fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    style D fill:#dcfce7,stroke:#22c55e,stroke-width:2px
 ```
 
 ### 最小磁盘占用
@@ -43,7 +64,7 @@ graph TD
 | Android cmdline-tools | ~130 MB | 纯命令行，不含 IDE |
 | platform-tools | ~10 MB | ADB、fastboot |
 | build-tools + platform | ~200 MB | 编译工具链 |
-| **总计** | **~1.7 GB** | Android Studio 方案约 4 GB+ |
+| **总计** | **~1.7 GB** | 若使用Android Studio 则约 4 GB+ |
 
 ---
 
@@ -51,16 +72,21 @@ graph TD
 
 ### 前置工具
 
-- **[Git for Windows](https://git-scm.com/download/win)** — Flutter 依赖 Git 进行版本管理
-- **[Visual Studio Code](https://code.visualstudio.com/)** — 推荐 IDE，安装 Dart/Flutter 扩展
+- **[Git for Windows](https://git-scm.com/download/win)**
+- **[Visual Studio Code](https://code.visualstudio.com/)**   — 推荐 IDE
+- **[Android Studio](https://developer.android.com/studio)** — 可选 IDE
+> 如有安装问题可以参考：
+> - [Git for Windows 安装问题](https://git-scm.com/book/zh/v2/)
+> - [Flutter 安装问题](https://docs.flutter.cn/install/troubleshoot)
+> - [Android Studio 安装问题](https://developer.android.com/blog/categories/how-tos)
+> - [VSCode 安装问题](https://cloud.tencent.com/developer/article/2586907)  
+> __Ps ``VsCode安装问题排查教程引用自:https://cloud.tencent.com/developer/article/2586907``__
 
 ### 下载与解压
 
+- 💡 本教程以当前的稳定版 Flutter SDK 3.44.6 为基准进行演练。若你项目有特殊版本需求，可前往官方镜像源获取对应包，整体配置流程完全一致。
+- 下载 [Flutter SDK 3.44.6 stable](https://storage.flutter-io.cn/flutter_infra_release/releases/stable/windows/flutter_windows_3.44.6-stable.zip?_gl=1*1wjho9v*_ga*MTQ3MTM2MzczLjE3ODM3NTY0NDg.*_ga_HPSFTRXK91*czE3ODM4MjcwMjYkbzQkZzEkdDE3ODM4Mjc4ODIkajU1JGwwJGgw)
 ```shell
-# 下载 Flutter SDK 3.44.6 stable
-# 国内用户推荐使用 flutter-io.cn CDN：
-# https://storage.flutter-io.cn/...
-
 # 解压到目标目录（例如 D:\DevTools\FlutterSDK）
 Expand-Archive -Path flutter_windows_3.44.6-stable.zip `
                -DestinationPath D:\DevTools\FlutterSDK
@@ -87,46 +113,54 @@ Expand-Archive -Path flutter_windows_3.44.6-stable.zip `
 
 ## 三、安装 Android SDK
 
+**注意**：由于版权问题,国内用户无法直接从 Google 下载 Android SDK，国内镜像源也不提供镜像下载服务。
+> **消息来源:**[清华大学开源软件AOSP镜像](https://mirrors.tuna.tsinghua.edu.cn/help/AOSP/)
+
 ### 3.1 网络诊断与策略选择
 
 在国内网络环境下安装 Android SDK 可能遇到访问限制。以下决策树可帮助快速定位可行方案：
 
 ```mermaid
 flowchart TD
-    Start["开始安装 Android SDK"] --> CheckDL["测试 dl.google.com 连通性<br/><code>curl -s -o NUL -w \"%{http_code}\"<br/>https://dl.google.com/android/repository/...</code>"]
-    CheckDL -->|"200 OK"| Direct["✅ 直连可用<br/>直接下载 cmdline-tools"]
-    CheckDL -->|"超时 / 000"| CheckProxy["有代理或 VPN？"]
-    CheckProxy -->|"是"| ProxyMode["配置 HTTP_PROXY<br/>使用代理下载"]
-    CheckProxy -->|"否"| AltSource["寻找替代来源<br/>• GitHub Releases<br/>• 开发者社区存档"]
+    Start["开始安装 Android SDK"] --> CheckDL{"测试 dl.google.com 连通性 <br> <code>curl -s -o NULL -w '%{http_code}' ...</code>"}
+    
+    CheckDL --> |"200 OK"| Direct["直连可用 / 下载 cmdline-tools"]
+    CheckDL --> |"超时 / 000"| CheckProxy{"检查是否有代理或 VPN？"}
+    
+    CheckProxy --> |"是"| ProxyMode["ProxyMode (配置 HTTP_PROXY 使用代理下载)"]
+    CheckProxy --> |"否"| AltSource["AltSource (寻找替代来源 <br> GitHub Releases / 开发者社区镜像)"]
     
     Direct --> DownloadTools["下载 commandlinetools"]
     ProxyMode --> DownloadTools
     AltSource --> DownloadTools
     
-    DownloadTools --> CheckJava["测试 Java 版本<br/><code>java -version</code>"]
-    CheckJava -->|"Java 17+"| OkJava["✅ 可直接运行 sdkmanager"]
-    CheckJava -->|"Java 1.8 / 11"| NeedJava["需要安装 JDK 17+"]
-    NeedJava --> GetJDK["获取 JDK 17"]
+    DownloadTools --> CheckJava{"测试 Java 版本 <br> <code>java -version</code>"}
+    CheckJava --> |"Java 17+"| OkJava["🎉 可执行 sdkmanager"]
+    CheckJava --> |"Java 1.8 / 11"| NeedJava["⚠️ 需要更换 JDK 17+"]
+    CheckJava --> |"未安装"| GetJdk["获取 JDK 17"]
     
-    GetJDK -->|"GitHub 可达"| GitHubJDK["从 adoptium.net 下载<br/>Temurin JDK 17"]
-    GetJDK -->|"GitHub 不可达"| MSJDK["从 Microsoft CDN 下载<br/><code>aka.ms/download-jdk/...</code>"]
+    GetJdk --> |"GitHub 可达"| GitHubJDK["从 adoptium.net 下载 Temurin JDK 17"]
+    GetJdk --> |"GitHub 不可达"| MSJDK["从 Microsoft CDN 下载 JDK 17"]
     
     GitHubJDK --> InstallJDK["安装 / 解压 JDK 17"]
     MSJDK --> InstallJDK
-    InstallJDK --> SetJavaHome["设置 JAVA_HOME"]
-    SetJavaHome --> SdkMgr["运行 sdkmanager<br/>安装 SDK 组件"]
-    OkJava --> SdkMgr
-    SdkMgr --> Done["✅ Android SDK 就绪"]
+    
+    InstallJDK --> SetJavaHome["运行 sdkmanager / 安装 SDK 组件"]
+    OkJava --> SdkMgr["运行 sdkmanager / 安装 SDK 组件"]
+    NeedJava --> GetJdk
 ```
 
-#### 实测结论
+#### 相关命令
 
-| 目标 | 状态 | 说明 |
-|------|------|------|
-| `dl.google.com` | ✅ **可达** (HTTP 200) | SDK 二进制文件托管于此，直连可用 |
-| `developer.android.com` | ❌ 不可达 (HTTP 000) | 文档站点被阻断，但 SDK 安装不依赖此域名 |
-| `github.com` | ❌ 不可达 | 不影响 SDK 安装（二进制不在 GitHub） |
-| `maven.google.com` | ❌ 超时 | 影响 Gradle 构建，需后续配置 Maven 镜像 |
+```shell
+# 测试连通性
+curl -I https://dl.google.com
+curl -I https://developer.android.com/studio
+
+# 测试https://developer.android.com/studio的连通性时 
+# 遇到超时或其他问题，不影响直连下载(如过可以直接访问https://dl.google.com话)
+```
+
 
 ### 3.2 安装 JDK 17
 
@@ -140,7 +174,7 @@ flowchart TD
 curl.exe -L -o D:\DevTools\OpenJDK17.zip `
   "https://aka.ms/download-jdk/microsoft-jdk-17.0.13-windows-x64.zip"
 
-# 解压
+# 解压到指定目录
 Expand-Archive -Path D:\DevTools\OpenJDK17.zip `
                -DestinationPath D:\DevTools\jdk-17
 ```
@@ -217,7 +251,7 @@ $env:ANDROID_HOME = "D:\DevTools\android-sdk"
 
 # 安装核心组件
 echo y | & "$env:ANDROID_HOME\cmdline-tools\latest\bin\sdkmanager.bat" `
-  "platforms;android-36" `
+  "platforms;android-35" `
   "build-tools;35.0.0" `
   "platform-tools" `
   --sdk_root="$env:ANDROID_HOME"
@@ -300,17 +334,22 @@ flutter doctor
 #### 期望结果
 
 ```mermaid
-graph LR
-    A["flutter doctor"] --> B["✓ Flutter"]
-    A --> C["✓ Windows Version"]
-    A --> D["✓ Android toolchain"]
-    A --> E["✗ Chrome<br/>(非必需)"]
-    A --> F["✗ Visual Studio<br/>(非必需)"]
-    A --> G["✓ Connected device"]
-    A --> H["! Network resources<br/>(国内网络局限)"]
+flowchart LR
+    A["🔍 运行 flutter doctor"] --> B["🟢 ✓ Flutter SDK"]
+    A --> C["🟢 ✓ Windows Version"]
+    A --> D["🟢 ✓ Android toolchain"]
+    A --> E["🟡 ✗ Chrome / VS (非必需)"]
+    A --> F["🟢 ✓ Connected device"]
+    A --> G["🔴 ! Network resources"]
 
-    D --> D1["Android SDK version 35.0.0"]
-    H --> H1["maven.google.com 超时<br/>不影响 SDK 编译"]
+    D --> D1["💡 完美识别 Android SDK 35.0.0"]
+    G --> G1["⚠️ maven.google.com 超时<br>(不影响本地 SDK 编译)"]
+
+    style B fill:#dcfce7,stroke:#22c55e,stroke-width:1px
+    style C fill:#dcfce7,stroke:#22c55e,stroke-width:1px
+    style D fill:#dcfce7,stroke:#22c55e,stroke-width:1px
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:1px
+    style G fill:#fee2e2,stroke:#ef4444,stroke-width:1px
 ```
 
 **关键输出**：`[✓] Android toolchain - develop for Android devices (Android SDK version 35.0.0)`
@@ -359,12 +398,15 @@ sdkmanager.bat --licenses --sdk_root="D:\DevTools\android-sdk"
 **解决**：配置项目级 Gradle 使用阿里云镜像：
 
 ```groovy
-// android/build.gradle 或 settings.gradle.kts
+// 📂 修改项目根目录下的 android/build.gradle（或 settings.gradle.kts）：
 // 在 repositories 中添加国内镜像
-repositories {
-    maven { url = uri("https://maven.aliyun.com/repository/public") }
-    maven { url = uri("https://maven.aliyun.com/repository/google") }
-    google()  // 保留作为 fallback
+pluginManagement {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        google()
+        mavenCentral()
+    }
 }
 ```
 

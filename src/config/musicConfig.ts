@@ -54,7 +54,7 @@ export const musicPlayerConfig: MusicPlayerConfig = {
 				artist: "喜多村英梨、野中蓝 / wowaka / wowoka",
 				url: "/assets/music/and Im home.mp3",
 				cover: "/assets/music/cover/and im home.webp",
-				lrc: "/assets/music/lrc/and Im home.lrc",
+				lrc: "/assets/music/lrc/and im home.lrc?raw",
 			},
 		],
 	},
